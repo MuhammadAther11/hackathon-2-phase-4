@@ -15,4 +15,5 @@ Or use port-forwarding:
 
 Then visit:
    - Frontend: http://localhost:{{ .Values.frontend.service.port }}
-   - Backend API docs: http://localhost:{{ .Values.backend.service.port }}/docs
+   - Backend API: http://localhost:{{ .Values.backend.service.port }}
+   - Backend Health: http://localhost:{{ .Values.backend.service.port }}/health

@@ -11,7 +11,7 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['--spider', '{{ include "todo-chatbot.fullname" . }}-backend:{{ .Values.backend.service.port }}/docs']
+      args: ['--spider', '-T', '10', 'http://{{ include "todo-chatbot.fullname" . }}-backend:{{ .Values.backend.service.port }}/health']
   restartPolicy: Never
 ---
 apiVersion: v1
@@ -27,5 +27,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['--spider', '{{ include "todo-chatbot.fullname" . }}-frontend:{{ .Values.frontend.service.port }}']
+      args: ['--spider', '-T', '10', 'http://{{ include "todo-chatbot.fullname" . }}-frontend:{{ .Values.frontend.service.port }}/']
   restartPolicy: Never
