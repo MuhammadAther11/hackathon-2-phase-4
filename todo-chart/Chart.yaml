@@ -1,0 +1,6 @@
+apiVersion: v2
+name: todo-chart
+description: Todo AI Chatbot - Full-stack Helm chart for local Minikube deployment
+type: application
+version: 0.2.0
+appVersion: "1.0.0"

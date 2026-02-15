@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "todo-test-backend-health"
+  labels:
+    {{- include "todo-chart.backendLabels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['--spider', '-q', 'http://todo-backend:{{ .Values.backend.service.port }}/health']
+  restartPolicy: Never

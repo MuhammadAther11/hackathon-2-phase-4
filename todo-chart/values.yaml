@@ -1,0 +1,107 @@
+# Todo AI Chatbot - Helm Values for Local Minikube Deployment
+
+# --- Backend Configuration ---
+backend:
+  replicaCount: 1
+  image:
+    repository: todo-backend
+    tag: latest
+    pullPolicy: Never  # Use local images (Minikube/Docker Desktop)
+  service:
+    type: NodePort
+    port: 8000
+    nodePort: 30800
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# --- Frontend Configuration ---
+frontend:
+  replicaCount: 1
+  image:
+    repository: todo-frontend
+    tag: latest
+    pullPolicy: Never  # Use local images (Minikube/Docker Desktop)
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30300
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 3000
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  env:
+    NEXT_PUBLIC_API_BASE_URL: "http://todo-backend:8000"
+    BETTER_AUTH_URL: "http://localhost:3000"
+
+# --- Secrets (base64 encoded at deploy time) ---
+secrets:
+  databaseUrl: ""
+  openaiApiKey: ""
+  cohereApiKey: ""
+  betterAuthSecret: ""
+  jwtSecret: ""
+  jwtAlgorithm: "HS256"
+  jwtExpiration: "3600"
+
+# --- Service Account ---
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# --- Ingress (disabled for local) ---
+ingress:
+  enabled: false
+
+# --- Autoscaling (disabled for local) ---
+autoscaling:
+  enabled: false

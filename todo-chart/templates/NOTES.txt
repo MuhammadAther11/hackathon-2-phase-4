@@ -1,0 +1,16 @@
+Todo AI Chatbot has been deployed!
+
+1. Backend API:
+   kubectl port-forward svc/todo-backend 8000:{{ .Values.backend.service.port }}
+   Then visit: http://localhost:8000/health
+
+2. Frontend UI:
+   kubectl port-forward svc/todo-frontend 3000:{{ .Values.frontend.service.port }}
+   Then visit: http://localhost:3000
+
+{{- if eq .Values.backend.service.type "NodePort" }}
+
+Or access directly via Minikube NodePort:
+   Backend:  minikube service todo-backend --url
+   Frontend: minikube service todo-frontend --url
+{{- end }}

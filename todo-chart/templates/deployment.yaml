@@ -1,0 +1,90 @@
+---
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-backend
+  labels:
+    {{- include "todo-chart.backendLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "todo-chart.backendSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "todo-chart.backendSelectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "todo-chart.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: {{ .Values.backend.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.backend.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.backend.securityContext.runAsGroup }}
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: todo-app-secrets
+          env:
+            - name: FRONTEND_URL
+              value: "http://todo-frontend:3000"
+          livenessProbe:
+            {{- toYaml .Values.backend.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.backend.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+---
+# Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-frontend
+  labels:
+    {{- include "todo-chart.frontendLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "todo-chart.frontendSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "todo-chart.frontendSelectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "todo-chart.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: {{ .Values.frontend.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.frontend.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.frontend.securityContext.runAsGroup }}
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NEXT_PUBLIC_API_BASE_URL
+              value: {{ .Values.frontend.env.NEXT_PUBLIC_API_BASE_URL | quote }}
+            - name: BETTER_AUTH_URL
+              value: {{ .Values.frontend.env.BETTER_AUTH_URL | quote }}
+            - name: BETTER_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: todo-app-secrets
+                  key: BETTER_AUTH_SECRET
+          livenessProbe:
+            {{- toYaml .Values.frontend.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.frontend.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
